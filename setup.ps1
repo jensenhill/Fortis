@@ -86,7 +86,7 @@ if ($LASTEXITCODE -ne 0) {
 
     if ($hasNvidia) {
         Write-Host "       NVIDIA GPU detected - trying the CUDA wheel first..."
-        & $venvPy -m pip install --disable-pip-version-check --quiet --only-binary :all: llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+        & $venvPy -m pip install --disable-pip-version-check --quiet --only-binary :all: llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu132
         if ((Test-LlamaImport)) { $ok = $true }
         if ($ok) {
             New-Item -ItemType File -Path $marker -Force | Out-Null
