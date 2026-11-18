@@ -73,20 +73,13 @@ if ($LASTEXITCODE -ne 0) {
     }
 
     if (Test-Path "$venvPy") {
-        # Only uninstall llama_cpp_python if it has been installed previously
-        $installed = & $venvPy -m pip list --format=freeze --disable-pip-version-check 2>&1 | Select-String "^llama-cpp-python=="
-        if ($installed) {
-            Write-Host "  [..] Cleaning up the old version of llama_cpp_python..."
-            & $venvPy -m pip uninstall --disable-pip-version-check --yes llama_cpp_python 2>&1 | Out-Null
-        } else {
-            Write-Host "  [..] Skipping clean-up of old version of llama_cpp_python..."
-        }
+        & $venvPy -m pip uninstall --disable-pip-version-check --yes llama_cpp_python 2>$null | Out-Null
         $LASTEXITCODE = 0
     }
 
     if ($hasNvidia) {
         Write-Host "       NVIDIA GPU detected - trying the CUDA wheel first..."
-        & $venvPy -m pip install --disable-pip-version-check --quiet --only-binary :all: llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu132
+        & $venvPy -m pip install --disable-pip-version-check --quiet --only-binary :all: llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
         if ((Test-LlamaImport)) { $ok = $true }
         if ($ok) {
             New-Item -ItemType File -Path $marker -Force | Out-Null
