@@ -72,17 +72,39 @@ def _port_in_use(port: int) -> bool:
 def _generate_ico_from_png(png_path: str, ico_path: str) -> bool:
     try:
         from PIL import Image
-        img = Image.open(png_path)
+        img = Image.open(png_path).convert("RGBA")
         img.save(ico_path, format="ICO", sizes=[(32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
         return True
     except Exception:
         return False
 
+# Check if an existing ICO file needs to be converted to RGBA format.  
+def _ico_needs_regeneration(ico_path: str) -> bool:
+    try:
+        from PIL import Image
+        with Image.open(ico_path) as img:
+            img_sizes = img.ico.sizes()
+            if not img_sizes:
+                return True
+        
+        for size in img_sizes:
+            frame = img.ico.getimage(size)
+            if frame.mode != "RGBA":
+                return True
+        return False
+
+    except Exception:
+        return True
 
 def _get_icon_path(static_dir: str) -> str | None:
     ico_path = os.path.join(static_dir, "logo.ico")
     png_path = os.path.join(static_dir, "logo.png")
     if os.path.exists(ico_path):
+        # On Linux, regenerate the ICO file if it doesn't use RGBA
+        is_linux = sys.platform.lower().startswith("linux")
+        if is_linux and _ico_needs_regeneration(ico_path):
+            if os.path.exists(png_path):
+                _generate_ico_from_png(png_path, ico_path)
         return ico_path
     if os.path.exists(png_path):
         try:
@@ -225,6 +247,7 @@ def main() -> None:
 
         window.events.loaded += on_loaded
         start_kwargs = {"icon": icon} if icon and icon.endswith(".ico") else {}
+        start_kwargs["private_mode"] = False # Allows access and persistence of localStorage
         webview.start(**start_kwargs)
         _shutdown_server()
     except ImportError:

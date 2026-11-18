@@ -26,12 +26,14 @@ echo "  [ok] $("$PY" --version)"
 cd "$(dirname "$0")"
 if [ ! -x ".venv/bin/python" ]; then
     echo "  [..] Creating virtual environment (one-time)..."
-    "$PY" -m venv .venv
+    "$PY" -m venv --system-site-packages .venv
 fi
 echo "  [ok] Virtual environment ready"
 VPY=".venv/bin/python"
 
 # 3. dependencies
+#    Installs GTK dependencies on Debian/Ubuntu Linux distributions,
+#    which is required for pywebview to work on Linux machines.
 if ! "$VPY" -c "import fastapi, chromadb, fitz, docx, pptx, openpyxl, reportlab, huggingface_hub, uvicorn, multipart, rank_bm25, matplotlib, webview, pytest" >/dev/null 2>&1; then
     echo "  [..] Installing dependencies (first run only, ~5 min)..."
     "$VPY" -m pip install --disable-pip-version-check -r requirements-dev.txt || {
@@ -41,6 +43,16 @@ if ! "$VPY" -c "import fastapi, chromadb, fitz, docx, pptx, openpyxl, reportlab,
     echo "  [ok] Dependencies installed"
 else
     echo "  [ok] Dependencies present"
+fi
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if ! "$VPY" -c "import gi; gi.require_version('Gtk', '3.0')" >/dev/null 2>&1; then
+        echo "  [..] Installing GTK dependencies (Debian/Ubuntu only)..."
+        sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1
+        echo "  [ok] GTK Dependencies installed"
+    else
+        echo "  [ok] GTK Dependencies are already present" 
+    fi
 fi
 
 # 4. llama-cpp-python
