@@ -390,8 +390,14 @@ def test_model_select_sets_n_ctx_from_tier(monkeypatch):
     from fastapi.testclient import TestClient
     from core.config import settings
     import engine.model_manager as model_manager
+    import engine.llama_engine as llama_engine
     import tempfile
     import os
+    
+    # Prevent the test from loading/unloading the dummy model, loading it in a temporary directory instead.
+    monkeypatch.setattr(model_manager, "_STATE_FILE", os.path.join(tempfile.mkdtemp(prefix="fortis-test-select-"), "active_model.json"))
+    monkeypatch.setattr(llama_engine, "unload", lambda: None)
+    monkeypatch.setattr(llama_engine, "_load_sync", lambda: None)
     
     original_n_ctx = settings.n_ctx
     
