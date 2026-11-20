@@ -47,11 +47,11 @@ fi
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if ! "$VPY" -c "import gi; gi.require_version('Gtk', '3.0')" >/dev/null 2>&1; then
-        echo "  [..] Installing GTK dependencies (Debian/Ubuntu only)..."
-        sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1
-        echo "  [ok] GTK Dependencies installed"
+        echo "  [..] Installing Linux Package Dependencies (Debian/Ubuntu only)..."
+        sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1 mesa-utils
+        echo "  [ok] Linux Package Dependencies installed"
     else
-        echo "  [ok] GTK Dependencies are already present" 
+        echo "  [ok] Linux Package Dependencies are already present" 
     fi
 fi
 

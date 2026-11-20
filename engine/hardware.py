@@ -14,6 +14,7 @@ import os
 import platform
 import shutil
 import subprocess
+import re
 from dataclasses import dataclass
 from typing import Dict
 
@@ -134,8 +135,20 @@ def _vram_gb() -> float:
             return mb / 1024.0
         except Exception:
             pass
+    # 3) Mesa graphics memory (Linux only)
+    glxinfo = shutil.which("glxinfo")
+    if glxinfo:
+        try:
+            out = subprocess.run(
+                [glxinfo, "-B"],
+                capture_output=True, text=True, timeout=5,
+            )
+            match = re.search(r"Video memory:\s*(\d+)\s*MB", out.stdout, re.IGNORECASE)
+            if match:
+                return int(match.group(1))/1024.0
+        except Exception as e:
+            pass
     return 0.0
-
 
 def _has_nvidia() -> bool:
     return _vram_gb() > 0.0
